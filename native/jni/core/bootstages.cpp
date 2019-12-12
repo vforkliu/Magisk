@@ -399,7 +399,9 @@ static bool magisk_env() {
 	}
 
 	// Disable/remove magiskhide, resetprop, and modules
+	LOGI("* SDK INT:%d",SDK_INT);
 	if (SDK_INT < 19) {
+		LOGI("* create disable magisk");
 		close(xopen(DISABLEFILE, O_RDONLY | O_CREAT | O_CLOEXEC, 0));
 		unlink("/sbin/resetprop");
 		unlink("/sbin/magiskhide");

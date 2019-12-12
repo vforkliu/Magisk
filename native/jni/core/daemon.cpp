@@ -139,6 +139,20 @@ static void main_daemon() {
 		return true;
 	});
 
+	LOGI("* Device SDK_INT:%d", SDK_INT);
+	if (SDK_INT == -1){
+		parse_prop_file("/system/build_18181.prop", [](auto key, auto val) -> bool {
+			if (key == "ro.build.version.sdk") {
+				LOGI("* Device API level: %s\n", val.data());
+				SDK_INT = parse_int(val);
+				return false;
+			}
+			return true;
+		});
+	}
+
+	LOGI("* Device SDK_INT:%d", SDK_INT);
+
 	// Load config status
 	parse_prop_file(MAGISKTMP "/config", [](auto key, auto val) -> bool {
 		if (key == "RECOVERYMODE" && val == "true")
