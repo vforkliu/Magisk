@@ -33,6 +33,7 @@ constexpr int (*init_applet_main[])(int, char *[]) =
 static FILE *kmsg;
 static int vprintk(const char *fmt, va_list ap) {
 	fprintf(kmsg, "magiskinit: ");
+	// fflush(kmsg);
 	return vfprintf(kmsg, fmt, ap);
 }
 static void setup_klog() {
@@ -169,6 +170,9 @@ static void setup_test(const char *dir) {
 int main(int argc, char *argv[]) {
 	umask(0);
 
+	// setup_klog();
+	
+
 	for (int i = 0; init_applet[i]; ++i) {
 		if (strcmp(basename(argv[0]), init_applet[i]) == 0)
 			return (*init_applet_main[i])(argc, argv);
@@ -199,11 +203,11 @@ int main(int argc, char *argv[]) {
 			return 1;
 		setup_klog();
 	}
-
 	LOGI("version:2019.12.12\n");
 	for(int i = 0; i < argc; i++){
 		LOGI("argv:%s\n",argv[i]);
 	}
+	
 
 	cmdline cmd{};
 	load_kernel_info(&cmd);

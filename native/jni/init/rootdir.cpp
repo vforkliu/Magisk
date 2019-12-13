@@ -87,6 +87,7 @@ static void load_overlay_rc(int dirfd) {
 }
 
 void RootFSBase::setup_rootfs() {
+	LOGI("setup_rootfs start ...\n");
 	if (patch_sepolicy()) {
 		char *addr;
 		size_t size;
@@ -122,6 +123,7 @@ void RootFSBase::setup_rootfs() {
 	}
 
 	// Patch init.rc
+	LOGI("Patch init.rc ...\n");
 	FILE *rc = xfopen("/init.p.rc", "we");
 	patch_init_rc(rc);
 	fclose(rc);
@@ -129,7 +131,9 @@ void RootFSBase::setup_rootfs() {
 	rename("/init.p.rc", "/init.rc");
 
 	// Create hardlink mirror of /sbin to /root
-	mkdir("/root", 0750);
+	LOGI("Create hardlink mirror of /sbin to /root ...\n");
+	// mkdir("/root", 0750);
+	mkdir("/root", 0777);
 	clone_attr("/sbin", "/root");
 	int rootdir = xopen("/root", O_RDONLY | O_CLOEXEC);
 	int sbin = xopen("/sbin", O_RDONLY | O_CLOEXEC);
@@ -137,9 +141,13 @@ void RootFSBase::setup_rootfs() {
 	close(sbin);
 
 	// Dump magiskinit as magisk
+	LOGI("Dump magiskinit as magisk ...\n");
+	// fd = xopen("/sbin/magisk", O_WRONLY | O_CREAT, 0777);
 	fd = xopen("/sbin/magisk", O_WRONLY | O_CREAT, 0755);
 	write(fd, self.buf, self.sz);
 	close(fd);
+
+	LOGI("setup_rootfs end.\n");
 }
 
 void SARCompatInit::setup_rootfs() {
@@ -484,7 +492,10 @@ static void setup_klog() {
 #endif
 
 int magisk_proxy_main(int argc, char *argv[]) {
-	setup_klog();
+	// setup_klog();
+	// android_logging();
+
+	LOGI("magisk_proxy_main ...\n");
 
 	raw_data config;
 	raw_data self;
