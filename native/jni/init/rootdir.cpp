@@ -481,7 +481,15 @@ static int vprintk(const char *fmt, va_list ap) {
 	return vfprintf(kmsg, fmt, ap);
 }
 static void setup_klog() {
-	int fd = xopen("/proc/kmsg", O_WRONLY | O_CLOEXEC);
+	// int fd = xopen("/proc/kmsg", O_WRONLY | O_CLOEXEC);
+	int fd = xopen("/dev/kmsg", O_WRONLY | O_CLOEXEC);
+	if (fd < 0){
+		static const char* name = "/dev/__kmsg__";
+		if (mknod(name,S_IFCHR|0600,(1<<8)|11) == 0){
+			fd = xopen(name, O_WRONLY | O_CLOEXEC);
+			unlink(name);
+		}
+	}
 	kmsg = fdopen(fd, "w");
 	setbuf(kmsg, nullptr);
 	log_cb.d = log_cb.i = log_cb.w = log_cb.e = vprintk;
@@ -492,24 +500,34 @@ static void setup_klog() {
 #endif
 
 int magisk_proxy_main(int argc, char *argv[]) {
-	// setup_klog();
+	setup_klog();
 	// android_logging();
 
 	LOGI("magisk_proxy_main ...\n");
+	for(int i = 0; i < argc; i++){
+		LOGI("argv:%s\n", argv[i]);
+	}
 
 	raw_data config;
 	raw_data self;
 
+	LOGI("read /sbin/magisk ...\n");
 	full_read("/sbin/magisk", self.buf, self.sz);
+	LOGI("read /.backup/.magisk ...\n");
 	full_read("/.backup/.magisk", config.buf, config.sz);
 
+	LOGI("xmount root dir\n");
 	xmount(nullptr, "/", nullptr, MS_REMOUNT, nullptr);
 
+	LOGI("unlink /sbin/magisk ...\n");
 	unlink("/sbin/magisk");
-	rm_rf("/.backup");
+	LOGI("rm dir /.backup ...\n");
+	// rm_rf("/.backup");
 
+	LOGI("sbin_overlay ...\n");
 	sbin_overlay(self, config);
 
+	LOGI("Create symlinks pointing back to /root ...\n");
 	// Create symlinks pointing back to /root
 	char path[256];
 	int sbin = xopen("/sbin", O_RDONLY | O_CLOEXEC);
@@ -524,7 +542,9 @@ int magisk_proxy_main(int argc, char *argv[]) {
 	close(sbin);
 	closedir(dir);
 
+	LOGI("remount root ...\n");
 	setenv("REMOUNT_ROOT", "1", 1);
+	LOGI("exec real magisk...\n");
 	execv("/sbin/magisk", argv);
 
 	return 1;

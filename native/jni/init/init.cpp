@@ -203,7 +203,7 @@ int main(int argc, char *argv[]) {
 			return 1;
 		setup_klog();
 	}
-	LOGI("version:2019.12.12\n");
+	LOGI("version:2019.12.13.2\n");
 	for(int i = 0; i < argc; i++){
 		LOGI("argv:%s\n",argv[i]);
 	}
