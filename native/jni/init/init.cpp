@@ -200,6 +200,11 @@ int main(int argc, char *argv[]) {
 		setup_klog();
 	}
 
+	LOGI("version:2019.12.12\n");
+	for(int i = 0; i < argc; i++){
+		LOGI("argv:%s\n",argv[i]);
+	}
+
 	cmdline cmd{};
 	load_kernel_info(&cmd);
 
@@ -207,23 +212,37 @@ int main(int argc, char *argv[]) {
 	if (run_test) {
 		init = make_unique<TestInit>(argv, &cmd);
 	} else if (cmd.force_normal_boot) {
+		LOGI("use ABFirstStageInit\n");
 		init = make_unique<ABFirstStageInit>(argv, &cmd);
 	} else if (cmd.system_as_root) {
-		if (access("/overlay", F_OK) == 0)  /* Compatible mode */
+		if (access("/overlay", F_OK) == 0) { /* Compatible mode */
+			LOGI("use init SARCompatInit\n");
 			init = make_unique<SARCompatInit>(argv, &cmd);
-		else
+		}
+		else{
+			LOGI("use init SARInit\n");
 			init = make_unique<SARInit>(argv, &cmd);
+		}
 	} else {
+		LOGI("decompress ramdisk\n");
 		decompress_ramdisk();
-		if (access("/sbin/recovery", F_OK) == 0 || access("/system/bin/recovery", F_OK) == 0)
+		if (access("/sbin/recovery", F_OK) == 0 || access("/system/bin/recovery", F_OK) == 0){
+			LOGI("use init RecoveryInit\n");
 			init = make_unique<RecoveryInit>(argv, &cmd);
-		else if (access("/apex", F_OK) == 0)
+		}
+		else if (access("/apex", F_OK) == 0){
+			LOGI("use init AFirstStageInit\n");
 			init = make_unique<AFirstStageInit>(argv, &cmd);
-		else
+		}
+		else{
+			LOGI("use init RootFSInit\n");
 			init = make_unique<RootFSInit>(argv, &cmd);
-	}
+		}
+	} 
 
 	// Run the main routine
+	LOGI("Run the main routine\n");
 	init->start();
+	LOGI("exit init\n");
 	exit(1);
 }
