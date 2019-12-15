@@ -491,7 +491,7 @@ int magisk_proxy_main(int argc, char *argv[]) {
 	xmount(nullptr, "/", nullptr, MS_REMOUNT, nullptr);
 
 	unlink("/sbin/magisk");
-	rm_rf("/.backup");
+	// rm_rf("/.backup");
 
 	sbin_overlay(self, config);
 

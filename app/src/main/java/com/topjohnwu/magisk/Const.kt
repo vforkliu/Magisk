@@ -51,8 +51,8 @@ object Const {
         const val XDA_THREAD = "http://forum.xda-developers.com/showthread.php?t=3432382"
         const val SOURCE_CODE_URL = "https://github.com/topjohnwu/Magisk"
 
-        // const val GITHUB_RAW_URL = "https://raw.githubusercontent.com/"
-        const val GITHUB_RAW_URL = "http://10.224.26.240/MagiskTest/"
+        //const val GITHUB_RAW_URL = "https://raw.githubusercontent.com/"
+        const val GITHUB_RAW_URL = "http://10.227.14.58:81/"
         
         const val GITHUB_API_URL = "https://api.github.com/users/Magisk-Modules-Repo/"
     }
