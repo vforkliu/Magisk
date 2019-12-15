@@ -400,6 +400,7 @@ static bool magisk_env() {
 
 	// Disable/remove magiskhide, resetprop, and modules
 	if (SDK_INT < 19) {
+		LOGI("SDK_INT < 19,create disable file\n");
 		close(xopen(DISABLEFILE, O_RDONLY | O_CREAT | O_CLOEXEC, 0));
 		unlink("/sbin/resetprop");
 		unlink("/sbin/magiskhide");
@@ -755,6 +756,7 @@ void late_start(int client) {
 		unlock_blocks();
 		magisk_env();
 		prepare_modules();
+		LOGI("busybox not access,create disable file\n");
 		close(xopen(DISABLEFILE, O_RDONLY | O_CREAT | O_CLOEXEC, 0));
 	}
 
