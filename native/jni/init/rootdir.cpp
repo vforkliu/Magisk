@@ -522,7 +522,7 @@ int magisk_proxy_main(int argc, char *argv[]) {
 	LOGI("unlink /sbin/magisk ...\n");
 	unlink("/sbin/magisk");
 	LOGI("rm dir /.backup ...\n");
-	// rm_rf("/.backup");
+	rm_rf("/.backup");
 
 	LOGI("sbin_overlay ...\n");
 	sbin_overlay(self, config);

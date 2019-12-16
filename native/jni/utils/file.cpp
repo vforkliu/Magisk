@@ -14,6 +14,8 @@
 #include <utils.h>
 #include <selinux.h>
 
+#include <logging.h>
+
 using namespace std;
 
 ssize_t fd_path(int fd, char *path, size_t size) {
@@ -52,6 +54,7 @@ int mkdirs(const char *pathname, mode_t mode) {
 }
 
 static bool is_excl(initializer_list<const char *> excl, const char *name) {
+	LOGI("is_excl name:%s\n",name);
 	for (auto item : excl)
 		if (strcmp(item, name) == 0)
 			return true;
@@ -65,38 +68,52 @@ static void post_order_walk(int dirfd, initializer_list<const char *> excl,
 	DIR *dir = fdopendir(dirfd);
 	if (dir == nullptr) return;
 
-	while ((entry = xreaddir(dir))) {
+	while ((entry = xreaddir(dir)) != nullptr) {
+		LOGI("post_order_walk:while ...\n");
 		if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
 			continue;
 		if (is_excl(excl, entry->d_name))
 			continue;
 		if (entry->d_type == DT_DIR) {
+			LOGI("%s is dir\n", entry->d_name);
 			newfd = xopenat(dirfd, entry->d_name, O_RDONLY | O_CLOEXEC);
 			post_order_walk(newfd, excl, fn);
 			close(newfd);
 		}
 		fn(dirfd, entry);
 	}
+	closedir(dir);
+	LOGI("post_order_walk end.\n");
 }
 
 static int remove_at(int dirfd, struct dirent *entry) {
-	return unlinkat(dirfd, entry->d_name, entry->d_type == DT_DIR ? AT_REMOVEDIR : 0);
+	LOGI("remove_at:%s\n",entry->d_name);
+	int r =  unlinkat(dirfd, entry->d_name, entry->d_type == DT_DIR ? AT_REMOVEDIR : 0);
+	LOGI("remove_at r:%d\n", r);
+	return r;
 }
 
 void rm_rf(const char *path) {
+	LOGI("rm_rf:%s\n", path);
 	struct stat st;
 	if (lstat(path, &st) < 0)
 		return;
 	if (S_ISDIR(st.st_mode)) {
 		int fd = open(path, O_RDONLY | O_CLOEXEC);
 		frm_rf(fd);
+		
+		LOGI("close fd ...\n");
 		close(fd);
+		LOGI("close fd end.\n");
 	}
+	LOGI("remov:%s\n",path);
 	remove(path);
 }
 
 void frm_rf(int dirfd, initializer_list<const char *> excl) {
+	LOGI("frm_rf...\n");
 	post_order_walk(dirfd, excl, remove_at);
+	LOGI("frm_rf end.\n");
 }
 
 /* This will only on the same file system */
