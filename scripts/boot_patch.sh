@@ -74,6 +74,7 @@ chmod -R 755 .
 CHROMEOS=false
 
 ui_print "- Unpacking boot image"
+ui_print "bootimg:$BOOTIMAGE"
 ./magiskboot unpack "$BOOTIMAGE"
 
 case $? in
@@ -95,10 +96,13 @@ esac
 # Test patch status and do restore
 ui_print "- Checking ramdisk status"
 if [ -e ramdisk.cpio ]; then
+  ui_print "cpio ramdisk.cpio test"
   ./magiskboot cpio ramdisk.cpio test
   STATUS=$?
+  ui_print "$STATUS"
 else
   # Stock A only system-as-root
+  ui_print "- Stock A only system-as-root"
   STATUS=0
 fi
 case $((STATUS & 3)) in

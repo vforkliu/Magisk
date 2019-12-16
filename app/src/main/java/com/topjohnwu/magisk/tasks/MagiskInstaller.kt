@@ -226,6 +226,8 @@ abstract class MagiskInstaller {
                     srcBoot = File(installDir, "boot.img").path
                     destFile = File(Config.downloadDirectory, "magisk_patched.img")
                     console.add("- Copying image to cache")
+                    console.add("srcBoot:" + srcBoot);
+                    console.add("destFile:" + destFile);
                     FileOutputStream(srcBoot).use { out -> it.copyTo(out) }
                 }
             }
@@ -294,6 +296,7 @@ abstract class MagiskInstaller {
 
     protected fun storeBoot(): Boolean {
         val patched = SuFile.open(installDir, "new-boot.img")
+        console.add("patched:" + patched);
         try {
             val os = tarOut?.let {
                 it.putNextEntry(newEntry(
